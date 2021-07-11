@@ -11,6 +11,7 @@ rule lex = parse
 | "if"         { IF }
 | "return"     { RETURN }
 | "while"      { WHILE }
+| "for"      { FOR }
 | "long"       { LONG }
 | "("          { LPAREN }
 | ")"          { RPAREN }
@@ -48,6 +49,7 @@ let string_of_token t =
   | IF -> Printf.sprintf "IF"
   | RETURN -> Printf.sprintf "RETURN"
   | WHILE -> Printf.sprintf "WHILE"
+  | FOR -> Printf.sprintf "FOR"
   | LONG -> Printf.sprintf "LONG"
   | LPAREN -> Printf.sprintf "LPAREN"
   | RPAREN -> Printf.sprintf "RPAREN"

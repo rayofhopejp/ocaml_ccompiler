@@ -27,6 +27,8 @@ class func_info func_num return_label=
     val func_num = func_num
     val return_label = return_label
     val mutable label_num = 0
+    val mutable loop_num = ([] : int list)
+    val mutable end_num = ([] : int list)
     (*stackを拡張して、その後のlen_stackを返す*)
     method extend_stack(size:int) =
       let _=len_stack<-len_stack+size in
@@ -68,10 +70,28 @@ class func_info func_num return_label=
     method gen_label =
         label_num<-label_num+1;
         sp ".LF%dL%d" func_num (label_num-1)
-    method jmp_bef_label = 
-        sp "\tjmp\t.LF%dL%d\n" func_num (label_num-1)
-    method jmp_bef2_label = 
-        sp "\tjmp\t.LF%dL%d\n" func_num (label_num-2)
+    method gen_label_loop =
+        loop_num <- label_num::loop_num;
+        label_num<-label_num+1;
+        sp ".LF%dL%d" func_num (label_num-1)
+    method gen_label_end =
+        end_num <- label_num::end_num;
+        label_num<-label_num+1;
+        sp ".LF%dL%d" func_num (label_num-1)
+    method jmp_loop_label = 
+        let num =
+          (match loop_num with
+          [] -> 0
+          | h::r -> h
+          ) in
+        sp "\tjmp\t.LF%dL%d\n" func_num num
+    method jmp_end_label = 
+        let num =
+          (match end_num with
+          [] -> 0
+          | h::r -> h
+          ) in
+        sp "\tjmp\t.LF%dL%d\n" func_num num
   end
 ;;
 
@@ -146,7 +166,7 @@ let rec cogen_expr expr (info:func_info)=
         | BIN_OP_DIV  -> "\tcqto\n\tidivq\t%rbx\n"
         | BIN_OP_MOD  -> "\tcqto\n\tidivq\t%rbx\n\tmovq\t%rdx,%rax\n"
         )^(*%raxに計算結果が格納されている*)
-        "\tpushq %rax\n"(*stackにrax(計算結果)が格納される*)
+        "\tpushq\t%rax\n"(*stackにrax(計算結果)が格納される*)
         )
     | EXPR_UN_OP(op,expr1) ->  (* 単項演算 (+A, -A, !A) *)
       let code_expr = cogen_expr expr1 info in
@@ -231,9 +251,9 @@ let rec cogen_stmt (stmt:stmt) (info:func_info):string=
   match stmt with
     STMT_EMPTY  ->  ""                   (* ; *)
   | STMT_CONTINUE ->                   (* continue; *)
-    info#jmp_bef2_label
+    info#jmp_loop_label
   | STMT_BREAK  ->                    (* break; *)
-    info#jmp_bef_label
+    info#jmp_end_label
   | STMT_RETURN(expr) ->
     let code_expr = cogen_expr expr info in
     let _ = info#popq in
@@ -274,22 +294,43 @@ let rec cogen_stmt (stmt:stmt) (info:func_info):string=
     code_stmt2^
     label_end^":\n"
   | STMT_WHILE(expr,stmt1) ->  (* while (A) S *) 
-    let label_start=info#gen_label in
-    let label_end=info#gen_label in
+    let label_start=info#gen_label_loop in
+    let label_end=info#gen_label_end in
     let code_expr=cogen_expr expr info in
     let _=info#popq in
     let code_stmt1=cogen_stmt stmt1 info in
+    label_start^":\n"^(*while文の中の処理*)
     code_expr^
     "\tpopq\t%rax\n"^
     "\tcmpq\t$0,%rax\n"^
     "\tje\t"^label_end^"\n"^(*Aが0の時のみendにジャンプ*)
-    label_start^":\n"^(*while文の中の処理*)
     code_stmt1^
-    code_expr^(*繰り返し判定処理*)
+    "\tjmp\t"^label_start^"\n"^(*startにジャンプ*)
+    label_end^":\n"(*while文の最後*)
+  | STMT_FOR(expr1,expr2,expr3,stmt1) ->(* for (A;B;C) S *)
+    let label_start=info#gen_label in
+    let label_loop =info#gen_label_loop in
+    let label_end = info#gen_label_end in
+    let code_expr1=cogen_expr expr1 info in
+    let _=info#popq in
+    let code_expr2=cogen_expr expr2 info in
+    let _=info#popq in
+    let code_stmt=cogen_stmt stmt1 info in
+    let code_expr3=cogen_expr expr3 info in
+    let _=info#popq in
+    code_expr1 ^ (*初期化*)
+    "\tpopq\t%rax\n"^
+    label_start^":\n"^(*処理のはじめ*)
+    code_expr2 ^ (*条件文*)
     "\tpopq\t%rax\n"^
     "\tcmpq\t$0,%rax\n"^
-    "\tjne\t"^label_start^"\n"^(*Aが0出ない時のみstartにジャンプ*)
-    label_end^":\n"(*while文の最後*)
+    "\tje\t"^label_end^"\n"^(*Bが0=条件を満たしていない時のみendにジャンプ*)
+    code_stmt^ (*処理*)
+    label_loop^":\n"^(*ループ処理のはじめ*)
+    code_expr3 ^ (*変化式*)
+    "\tpopq\t%rax\n"^
+    "\tjmp\t"^label_start^"\n"^(*条件評価までとぶ*)
+    label_end^":\n"(*for文の最後*)
 ;;
 
 (*引数を変数としてスタックに保存し直す*)

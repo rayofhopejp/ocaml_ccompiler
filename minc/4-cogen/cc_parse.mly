@@ -5,6 +5,7 @@
 %token ELSE IF
 %token RETURN
 %token WHILE
+%token FOR
 %token LONG
 %token LPAREN RPAREN
 %token LBRACE RBRACE
@@ -62,6 +63,7 @@ stmt :
  | compound_stmt                   { $1 }
  | while_stmt                      { $1 }
  | if_stmt                         { $1 }
+ | for_stmt                         { $1 }
  | expr SEMICOLON                  { Cc_ast.STMT_EXPR($1) }
 
 compound_stmt :
@@ -76,6 +78,9 @@ if_stmt :
      
 while_stmt :
  | WHILE LPAREN expr RPAREN stmt   { Cc_ast.STMT_WHILE($3, $5) }
+
+for_stmt :
+ | FOR LPAREN expr SEMICOLON expr SEMICOLON expr RPAREN stmt   { Cc_ast.STMT_FOR($3, $5, $7, $9) }
 
 expr :
  | NUM                       { Cc_ast.EXPR_NUM($1) }

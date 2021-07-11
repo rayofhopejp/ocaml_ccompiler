@@ -43,6 +43,7 @@ type stmt =
 | STMT_COMPOUND of ((type_expr * string) list * stmt list) (* { int x; ... } *)
 | STMT_IF of (expr * stmt * stmt)                          (* if (A) S else T *)
 | STMT_WHILE of (expr * stmt)                              (* while (A) S *)
+| STMT_FOR of (expr * expr * expr * stmt)                  (* for (A;B;C) S *)
 ;;
 
 (* 関数定義 *)
