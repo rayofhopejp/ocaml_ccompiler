@@ -1,4 +1,4 @@
-# Assignment for "Programming Language"
+# Assignment for "Programming Languages"
 ## Simple C compiler by OCaml
 overview of minc specification
 
@@ -8,6 +8,8 @@ overview of minc specification
 - no forward declarations of functions (as they are not necessary)
 - therefore only function definitions come at the toplevel
 
+## advanced exercise
+- supported for statement
 ## Usage
 ```
 $ cd minc/4-cogen

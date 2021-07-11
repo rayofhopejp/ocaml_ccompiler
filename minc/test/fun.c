@@ -341,3 +341,29 @@ long f76() {
   return i;
 }
 
+long f77(long n) {
+  long i;
+  long s;
+  s = 0;
+  for(i = 0 ; i < n ; i = i + 1 ){
+    s = s + i;
+  }
+  return s;
+}
+
+long f78(long n) {
+  long i;
+  long s;
+  s = 0;
+  for(i = 0 ; i < n ; i = i + 1 ){
+    if(i == 1){
+      continue;
+    }else if(i == n - 3){
+      break;
+    }else{
+      s = s + i;
+    }
+  }
+  return s;
+}
+
