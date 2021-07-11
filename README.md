@@ -14,6 +14,8 @@ overview of minc specification
 ```
 $ cd minc/4-cogen
 $ . /home/share/.opam/opam-init/init.sh
+#compile compiler
+make clean;make
 #compile
 $ ./cc.byte ../test/fun.c fun.s 
 #test

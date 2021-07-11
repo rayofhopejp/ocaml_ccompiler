@@ -27,7 +27,9 @@ class func_info func_num return_label=
     val func_num = func_num
     val return_label = return_label
     val mutable label_num = 0
+    (*複数のループが入れ子になっているときのことを考え、continueで抜けるためのラベル番号をスタックで持っておく*)
     val mutable loop_num = ([] : int list)
+    (*複数のループが入れ子になっているときのことを考え、breakで抜けるためのラベル番号をスタックで持っておく*)
     val mutable end_num = ([] : int list)
     (*stackを拡張して、その後のlen_stackを返す*)
     method extend_stack(size:int) =
@@ -92,6 +94,13 @@ class func_info func_num return_label=
           | h::r -> h
           ) in
         sp "\tjmp\t.LF%dL%d\n" func_num num
+    method exit_loop =
+        loop_num <- (match loop_num with
+        [] -> []
+        | h::r -> r);
+        end_num <- (match end_num with
+        [] -> []
+        | h::r -> r);
   end
 ;;
 
@@ -299,6 +308,7 @@ let rec cogen_stmt (stmt:stmt) (info:func_info):string=
     let code_expr=cogen_expr expr info in
     let _=info#popq in
     let code_stmt1=cogen_stmt stmt1 info in
+    let _=info#exit_loop in
     label_start^":\n"^(*while文の中の処理*)
     code_expr^
     "\tpopq\t%rax\n"^
@@ -318,6 +328,7 @@ let rec cogen_stmt (stmt:stmt) (info:func_info):string=
     let code_stmt=cogen_stmt stmt1 info in
     let code_expr3=cogen_expr expr3 info in
     let _=info#popq in
+    let _=info#exit_loop in
     code_expr1 ^ (*初期化*)
     "\tpopq\t%rax\n"^
     label_start^":\n"^(*処理のはじめ*)

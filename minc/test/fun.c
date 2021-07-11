@@ -366,4 +366,22 @@ long f78(long n) {
   }
   return s;
 }
+long f79(long n) {
+  long i;
+  long s;
+  s = 0;
+  for(i = 0 ; i < n ; i = i + 1 ){
+    if(i == 1){
+      continue;
+    }else if(i == n - 3){
+      break;
+    }else{
+      while(1){
+        break;
+      }
+      s = s + i;
+    }
+  }
+  return s;
+}
 

@@ -2,7 +2,7 @@
 # test.mk
 #
 
-ns := $(shell seq -f "%02.0f" 0 78)
+ns := $(shell seq -f "%02.0f" 0 79)
 gcc_exes := $(patsubst %,exe/f%.gcc,$(ns))
 occ_exes := $(patsubst %,exe/f%.occ,$(ns))
 checks := $(patsubst %,check/f%.check,$(ns))
