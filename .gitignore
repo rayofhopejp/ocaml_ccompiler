@@ -1,0 +1,16 @@
+#ビルドファイル
+_build
+#テスト
+minc/4-cogen/exe/*
+minc/4-cogen/check/*
+#生成されるアセンブリコードなど
+fun_occ.s
+fun.i
+fun.s
+#実行ファイル
+*.byte
+*.top
+*.native
+#ipynb
+.ipynb_checkpoints
+*.ipynb
