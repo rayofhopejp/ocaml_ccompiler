@@ -15,11 +15,3 @@ overview of minc specification
 test/ --- test code for 4-cogen
 
 See notebook for instructions
-
-## Usage
-```
-cd minc/4-cogen
-. /home/share/.opam/opam-init/init.sh
-./cc.byte ../test/fun.c fun.s
-make -f test.mk #test
-```
