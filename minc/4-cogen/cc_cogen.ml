@@ -1,5 +1,9 @@
 (* 中間言語 (IR) *)
+(*コードはここで公開する予定:https://github.com/NaomiatLibrary/ocaml_ccompiler *)
+(* 2021/08/10(課題提出期限)までは非公開にしています　*)
 (* オペコード一覧：https://www.felixcloutier.com/x86/ *)
+(* 追加課題として、forループに対応したほか、*)
+(* 入れ子ループからのbreakなどに対応するためいくつかテストケースを足しました。 *)
 open Cc_ast
 ;;
 
