@@ -21,7 +21,7 @@ let map_cat delim f l =
 exception Not_implemented of string
 ;;
 
-
+(*関数の情報を保存するクラス*)
 class func_info func_num return_label=
   object(self)
     (*string:the name of variable*)
@@ -73,6 +73,7 @@ class func_info func_num return_label=
     (*returnに飛ぶ*)
     method jump_return =
       "\tjmp\t" ^ return_label ^ "\n"
+    (*さまざまなラベルを生成する*)
     method gen_label =
         label_num<-label_num+1;
         sp ".LF%dL%d" func_num (label_num-1)
@@ -84,6 +85,7 @@ class func_info func_num return_label=
         end_num <- label_num::end_num;
         label_num<-label_num+1;
         sp ".LF%dL%d" func_num (label_num-1)
+    (*さまざまなラベルに飛ぶ*)
     method jmp_loop_label = 
         let num =
           (match loop_num with
@@ -108,7 +110,8 @@ class func_info func_num return_label=
   end
 ;;
 
-
+(*expr(式)のコンパイル*)
+(*結果は一々スタックに挿入することでわかりやすく*)
 let rec cogen_expr expr (info:func_info)=
   (match expr with
     EXPR_NUM(num) ->
@@ -260,6 +263,7 @@ let rec cogen_def_list (arg_list:(type_expr * string) list) info=
       code_h^code_r,new_new_info
 ;;
 
+(*stmt(文)のコンパイル*)
 let rec cogen_stmt (stmt:stmt) (info:func_info):string=
   match stmt with
     STMT_EMPTY  ->  ""                   (* ; *)
@@ -372,8 +376,7 @@ let rec cogen_arg_list (arg_list:(type_expr * string) list) info i=
       code_h^code_r
 ;;
 
-(*変数とかをスタックにしまっていたのでそれを消します*)
-
+(*関数のコンパイル*)
 let rec cogen_definition definition i=
   (* Printf.printf "\n関数f%dを生成\n" i; *)
   let return_label = ".LFR"^ (string_of_int i) in
@@ -396,6 +399,8 @@ let rec cogen_definition definition i=
       "\tret\n" ^
       "\t.cfi_endproc\n" 
 ;;
+
+(*関数リストのコンパイル*)
 let rec cogen_definiton_list def_list i = 
   match def_list with
     [] -> ""
